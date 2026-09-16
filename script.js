@@ -94,6 +94,172 @@ if (receptionSection && receptionHeading && siteHeader) {
   if (document.fonts) document.fonts.ready.then(updateReceptionOffsets);
 }
 
+// Pinned, scroll-driven sequences. The wrapper pins under the navbar and vertical scroll advances
+// through `count` states: each state holds still for `hold` screens, then eases to the next over `move`.
+// The rendered position follows the scroll with a light inertia. With reduced motion nothing pins.
+function createPinnedSequence({ wrap, count, pinnedClass, hold = 0.45, move = 0.85, tail = 0, smoothMs = 130, render, setMode }) {
+  const header = document.querySelector('.topbar');
+  const lastIndex = count - 1;
+  const sequenceScreens = count * hold + lastIndex * move;
+  // `tail` keeps the section pinned on the last state a little longer (e.g. while the next block slides over it).
+  const travelScreens = sequenceScreens + tail;
+  wrap.style.setProperty('--travel', travelScreens);
+
+  const positionAt = progressValue => {
+    const scrolled = progressValue * travelScreens;
+    const cycle = hold + move;
+    const index = Math.floor(scrolled / cycle);
+    if (scrolled >= sequenceScreens || index >= lastIndex) return lastIndex;
+    const within = scrolled - index * cycle;
+    if (within <= hold) return index;
+    const t = (within - hold) / move;
+    return index + t * t * (3 - 2 * t);
+  };
+
+  let currentPosition = 0;
+  let lastFrame = 0;
+  let snapNextFrame = true;
+  let frameRequest = 0;
+  let listening = false;
+
+  const targetPosition = () => {
+    const navHeight = Math.ceil(header?.getBoundingClientRect().height || 0);
+    wrap.style.setProperty('--nav-h', `${navHeight}px`);
+    const rect = wrap.getBoundingClientRect();
+    const travel = Math.max(1, rect.height - (innerHeight - navHeight));
+    return positionAt(Math.min(1, Math.max(0, (navHeight - rect.top) / travel)));
+  };
+
+  const frame = now => {
+    frameRequest = 0;
+    if (!wrap.classList.contains(pinnedClass)) return;
+    const target = targetPosition();
+    const elapsed = lastFrame ? Math.min(64, now - lastFrame) : 16;
+    if (snapNextFrame) {
+      currentPosition = target;
+      snapNextFrame = false;
+    } else {
+      currentPosition += (target - currentPosition) * (1 - Math.exp(-elapsed / smoothMs));
+    }
+    if (Math.abs(target - currentPosition) < 0.0005) currentPosition = target;
+    render(currentPosition);
+    if (currentPosition !== target) {
+      lastFrame = now;
+      frameRequest = requestAnimationFrame(frame);
+    } else {
+      lastFrame = 0;
+    }
+  };
+  const queue = () => {
+    if (!frameRequest) frameRequest = requestAnimationFrame(frame);
+  };
+
+  const applyMode = () => {
+    const pinned = !motionPreference.matches;
+    wrap.classList.toggle(pinnedClass, pinned);
+    setMode(pinned);
+    snapNextFrame = true;
+    queue();
+  };
+  applyMode();
+  motionPreference.addEventListener('change', applyMode);
+
+  new IntersectionObserver(entries => {
+    const inView = entries[0].isIntersecting;
+    if (inView && !listening) {
+      // Entering from above or below: start from the real position, not from the first state.
+      snapNextFrame = true;
+      addEventListener('scroll', queue, { passive: true });
+      addEventListener('resize', queue);
+      listening = true;
+      queue();
+    } else if (!inView && listening) {
+      removeEventListener('scroll', queue);
+      removeEventListener('resize', queue);
+      listening = false;
+    }
+  }).observe(wrap);
+}
+const clamp01 = value => Math.min(1, Math.max(0, value));
+
+// Section 02: Volano della Preferenza. Scroll walks steps 1 -> 6 around the wheel and then closes the loop
+// back on step 1. While still pinned, the outro card slides up over the wheel.
+const VOLANO_TAIL = 0.9; // screens; keep in sync with the outro's negative margin in styles.css (90svh)
+const volano = document.querySelector('.volano');
+const volanoOutro = document.querySelector('.volano-outro');
+if (volano && 'IntersectionObserver' in window) {
+  const volanoSteps = [...volano.querySelectorAll('.volano-step')];
+  const volanoNodes = [...volano.querySelectorAll('.volano-node')];
+  const volanoArrows = [...volano.querySelectorAll('.volano-arrow')];
+  const volanoBars = [...volano.querySelectorAll('.volano-progress span')];
+  const volanoArc = volano.querySelector('.volano-progress-arc');
+  const stepCount = volanoSteps.length;
+  const loopDistance = (index, position) => {
+    // Step 1 is both the start (0) and the end of the loop (stepCount).
+    const direct = index - position;
+    return index === 0 && Math.abs(stepCount - position) < Math.abs(direct) ? stepCount - position : direct;
+  };
+  createPinnedSequence({
+    wrap: volano,
+    count: stepCount + 1,
+    pinnedClass: 'is-pinned',
+    hold: 0.4,
+    move: 0.6,
+    tail: VOLANO_TAIL,
+    setMode: pinned => {
+      if (pinned) return;
+      volanoArc.style.strokeDashoffset = '';
+      volano.style.removeProperty('--cover');
+      volanoNodes.forEach(node => node.classList.remove('is-active', 'is-done'));
+      volanoSteps.forEach(step => step.removeAttribute('aria-hidden'));
+    },
+    render: position => {
+      volanoArc.style.strokeDashoffset = String(100 - (position / stepCount) * 100);
+      const activeIndex = Math.round(position) % stepCount;
+      volanoNodes.forEach((node, index) => {
+        node.classList.toggle('is-active', index === activeIndex);
+        node.classList.toggle('is-done', index <= position + 0.5);
+      });
+      volanoArrows.forEach((arrow, index) => arrow.classList.toggle('is-done', position >= index + 0.5));
+      volanoSteps.forEach((step, index) => {
+        const distance = loopDistance(index, position);
+        step.style.setProperty('--d', Math.max(-1, Math.min(1, distance)).toFixed(4));
+        // Sequential fade: the outgoing text is gone before the incoming one appears.
+        step.style.setProperty('--fade', clamp01(1 - Math.abs(distance) * 2.4).toFixed(3));
+        step.setAttribute('aria-hidden', String(index !== activeIndex));
+      });
+      volanoBars.forEach((bar, index) => bar.style.setProperty('--fill', clamp01(position - index + 1).toFixed(4)));
+      // 0 -> 1 while the outro card rises over the pinned wheel.
+      if (volanoOutro) {
+        const cover = clamp01((innerHeight - volanoOutro.getBoundingClientRect().top) / (innerHeight * VOLANO_TAIL));
+        volano.style.setProperty('--cover', cover.toFixed(3));
+      }
+    }
+  });
+}
+
+// The outro then sticks and the "Il sistema" intro slides over it. It sticks under the navbar, or later
+// if it is taller than the viewport, so its last line is always read before being covered.
+const systemSection = document.querySelector('.system-section');
+if (volano && volanoOutro && systemSection) {
+  const header = document.querySelector('.topbar');
+  let outroQueued = false;
+  const updateOutro = () => {
+    outroQueued = false;
+    if (!volano.classList.contains('is-pinned')) return;
+    const navHeight = Math.ceil(header?.getBoundingClientRect().height || 0);
+    volanoOutro.style.setProperty('--stick-top', `${Math.min(navHeight, innerHeight - volanoOutro.offsetHeight)}px`);
+    const cover = clamp01((innerHeight - systemSection.getBoundingClientRect().top) / (innerHeight * VOLANO_TAIL));
+    volanoOutro.style.setProperty('--cover', cover.toFixed(3));
+  };
+  const queueOutro = () => {
+    if (!outroQueued) { outroQueued = true; requestAnimationFrame(updateOutro); }
+  };
+  addEventListener('scroll', queueOutro, { passive: true });
+  addEventListener('resize', queueOutro);
+  queueOutro();
+}
+
 // Section 03: the steps pin under the navbar and vertical scroll slides them horizontally.
 // With reduced motion (or without JS) they stay as stacked full-screen panels.
 const systemWrap = document.querySelector('.system-steps-wrap');
@@ -101,63 +267,33 @@ const systemTrack = systemWrap?.querySelector('.system-steps');
 if (systemWrap && systemTrack && 'IntersectionObserver' in window) {
   const systemSteps = [...systemTrack.querySelectorAll('.system-step')];
   const railItems = [...systemWrap.querySelectorAll('.system-rail-item')];
-  const lastIndex = systemSteps.length - 1;
   systemWrap.style.setProperty('--steps', systemSteps.length);
   systemTrack.querySelectorAll('.step-icon *').forEach(shape => shape.setAttribute('pathLength', '1'));
-  let systemQueued = false;
-  let systemListening = false;
-
-  const updateSystem = () => {
-    systemQueued = false;
-    if (!systemWrap.classList.contains('is-horizontal')) return;
-    const navHeight = Math.ceil(siteHeader?.getBoundingClientRect().height || 0);
-    systemWrap.style.setProperty('--nav-h', `${navHeight}px`);
-    const rect = systemWrap.getBoundingClientRect();
-    const pinHeight = innerHeight - navHeight;
-    const travel = Math.max(1, rect.height - pinHeight);
-    const progressValue = Math.min(1, Math.max(0, (navHeight - rect.top) / travel));
-    const position = progressValue * lastIndex;
-    systemTrack.style.transform = `translate3d(${(-position * 100) / systemSteps.length}%,0,0)`;
-    systemSteps.forEach((step, index) => {
-      step.style.setProperty('--d', Math.max(-1, Math.min(1, index - position)).toFixed(3));
-      if (position > index - 0.55) step.classList.add('is-seen');
-    });
-    const activeIndex = Math.round(position);
-    railItems.forEach((item, index) => {
-      item.style.setProperty('--fill', Math.max(0, Math.min(1, position - index + 1)).toFixed(3));
-      item.classList.toggle('is-active', index === activeIndex);
-    });
-  };
-  const queueSystem = () => {
-    if (!systemQueued) { systemQueued = true; requestAnimationFrame(updateSystem); }
-  };
-
-  const applySystemMode = () => {
-    const horizontal = !motionPreference.matches;
-    systemWrap.classList.toggle('is-horizontal', horizontal);
-    systemTrack.classList.toggle('is-enhanced', horizontal);
-    if (!horizontal) {
+  createPinnedSequence({
+    wrap: systemWrap,
+    count: systemSteps.length,
+    pinnedClass: 'is-horizontal',
+    setMode: pinned => {
+      systemTrack.classList.toggle('is-enhanced', pinned);
+      if (pinned) return;
       systemTrack.style.transform = '';
       systemSteps.forEach(step => step.classList.add('is-seen'));
+    },
+    render: position => {
+      systemTrack.style.transform = `translate3d(${(-position * 100) / systemSteps.length}%,0,0)`;
+      systemSteps.forEach((step, index) => {
+        step.style.setProperty('--d', Math.max(-1, Math.min(1, index - position)).toFixed(4));
+        // Light crossfade: full opacity when centred, fading as the panel slides away.
+        step.style.setProperty('--fade', (1 - Math.min(1, Math.abs(index - position)) ** 1.6).toFixed(3));
+        if (position > index - 0.55) step.classList.add('is-seen');
+      });
+      const activeIndex = Math.round(position);
+      railItems.forEach((item, index) => {
+        item.style.setProperty('--fill', clamp01(position - index + 1).toFixed(4));
+        item.classList.toggle('is-active', index === activeIndex);
+      });
     }
-    queueSystem();
-  };
-  applySystemMode();
-  motionPreference.addEventListener('change', applySystemMode);
-
-  new IntersectionObserver(entries => {
-    const inView = entries[0].isIntersecting;
-    if (inView && !systemListening) {
-      addEventListener('scroll', queueSystem, { passive: true });
-      addEventListener('resize', queueSystem);
-      systemListening = true;
-      queueSystem();
-    } else if (!inView && systemListening) {
-      removeEventListener('scroll', queueSystem);
-      removeEventListener('resize', queueSystem);
-      systemListening = false;
-    }
-  }).observe(systemWrap);
+  });
 }
 
 if ('IntersectionObserver' in window) {
@@ -172,60 +308,6 @@ if ('IntersectionObserver' in window) {
   }, { threshold: 0.08 });
   document.querySelectorAll('.reveal').forEach(element => reveals.observe(element));
 }
-
-// The original six descriptions are also available without JavaScript in the transcript.
-const phases = [...document.querySelectorAll('#phase-list li')].map(item => ({
-  title: item.querySelector('h3').textContent,
-  description: item.querySelector('p').textContent
-}));
-const nodes = [...document.querySelectorAll('.phase-node')];
-const phaseContent = document.querySelector('#phase-content');
-const pauseButton = document.querySelector('#wheel-toggle');
-let activePhase = 0;
-let paused = motionPreference.matches;
-let wheelVisible = false;
-let timer;
-function renderPhase(index, manual = false) {
-  activePhase = index;
-  document.querySelector('#phase-count').textContent = `Fase 0${index + 1} / 06`;
-  phaseContent.querySelector('h3').textContent = phases[index].title;
-  phaseContent.querySelector('p').textContent = phases[index].description;
-  nodes.forEach((node, n) => {
-    node.classList.toggle('active', n === index);
-    node.setAttribute('aria-pressed', String(n === index));
-  });
-  if (manual) phaseContent.setAttribute('aria-live', 'polite');
-  else phaseContent.removeAttribute('aria-live');
-  if (!motionPreference.matches && phaseContent.animate) {
-    phaseContent.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 320, easing: 'ease-out' });
-  }
-}
-function syncPlayback() {
-  clearInterval(timer);
-  pauseButton.setAttribute('aria-pressed', String(paused));
-  pauseButton.innerHTML = paused ? 'Riprendi <span aria-hidden="true">▷</span>' : 'Pausa <span aria-hidden="true">Ⅱ</span>';
-  document.querySelector('.wheel-ring').style.setProperty('--play-state', paused ? 'paused' : 'running');
-  if (!paused && wheelVisible && !document.hidden) timer = setInterval(() => renderPhase((activePhase + 1) % phases.length), 8500);
-}
-nodes.forEach((node, index) => {
-  node.addEventListener('click', () => { paused = true; renderPhase(index, true); syncPlayback(); });
-  node.addEventListener('keydown', event => {
-    let next;
-    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % nodes.length;
-    if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index + nodes.length - 1) % nodes.length;
-    if (event.key === 'Home') next = 0;
-    if (event.key === 'End') next = nodes.length - 1;
-    if (next === undefined) return;
-    event.preventDefault(); nodes[next].focus(); nodes[next].click();
-  });
-});
-pauseButton.addEventListener('click', () => { paused = !paused; syncPlayback(); });
-document.addEventListener('visibilitychange', syncPlayback);
-motionPreference.addEventListener('change', event => { paused = event.matches; syncPlayback(); });
-if ('IntersectionObserver' in window) {
-  new IntersectionObserver(entries => { wheelVisible = entries[0].isIntersecting; syncPlayback(); }, { threshold: 0.2 }).observe(document.querySelector('.wheel'));
-} else { wheelVisible = true; }
-syncPlayback();
 
 // Local validation only. No endpoint or Google Places credentials were supplied.
 const form = document.querySelector('#studio-form');
