@@ -1,0 +1,29 @@
+.design-footer{padding-top:55px;padding-bottom:26px;background:var(--red);color:var(--dark);overflow:hidden;border-top:0}
+.design-footer .footer-design-wrap{width:min(calc(100% - var(--gutter)*2),1600px);margin-inline:auto}
+.footer-design-top{display:flex;justify-content:space-between;gap:25px;align-items:center}
+.footer-design-top p{font-size:13px;line-height:1.6;max-width:390px;color:var(--dark)}
+.footer-design-cta{display:inline-flex;align-items:center;justify-content:center;gap:30px;min-height:50px;padding:13px 23px;border:1px solid transparent;border-radius:var(--radius-pill);font-size:12px;font-weight:700;line-height:1.4;background:var(--dark);color:var(--paper);text-transform:none;transition:background .32s,color .32s,transform .32s;white-space:nowrap}
+.footer-design-cta:hover{background:#2a2a2a;transform:translateY(-2px)}
+.footer-design-cta span{font-size:18px;font-weight:400;line-height:1;transition:transform .32s}
+.footer-design-cta:hover span{transform:translateY(-2px)}
+.footer-design-word{font-size:clamp(38px,9vw,155px);font-weight:800;letter-spacing:-.08em;line-height:1.35;margin-top:28px;white-space:nowrap;text-transform:none;color:var(--dark)}
+.footer-design-word .footer-design-star{font-size:.5em;vertical-align:top;display:inline-block;transform:translateY(.02em)}
+.footer-design-bottom{border-top:1px solid rgb(25 25 25 / .3);padding-top:21px;display:flex;justify-content:space-between;gap:20px;font:10px/1.5 var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--dark)}
+.footer-design-bottom a{display:flex;gap:9px;align-items:center;color:var(--dark)}
+.footer-design-bottom a:hover{text-decoration:underline}
+@media(max-width:760px){
+  .design-footer{padding-top:45px;padding-bottom:22px}
+  .footer-design-top{align-items:flex-start}
+  .footer-design-top p{font-size:11px;max-width:190px}
+  .footer-design-cta{font-size:10px;padding:12px 16px;gap:13px;min-height:44px}
+  .footer-design-word{font-size:9vw;margin-top:32px}
+  .footer-design-bottom{font-size:8px}
+  .footer-design-bottom span:nth-child(2){display:none}
+}
+@media(max-width:560px){
+  .footer-design-top{gap:18px}
+  .footer-design-top p{max-width:170px}
+  .footer-design-cta{padding:11px 14px;white-space:normal;text-align:left}
+  .footer-design-word{font-size:8.7vw;letter-spacing:-.075em}
+  .footer-design-bottom{gap:12px}
+}
