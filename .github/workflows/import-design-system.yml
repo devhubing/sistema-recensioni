@@ -1,0 +1,41 @@
+name: Import design system
+
+on:
+  push:
+    branches: [design-system]
+    paths:
+      - '.github/workflows/import-design-system.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: design-system
+          fetch-depth: 0
+      - name: Download package
+        run: |
+          curl -L 'https://at.adobe.com/IDg29RYnQ2yhaCDi' -o /tmp/design-system.zip
+      - name: Extract package
+        run: |
+          rm -rf /tmp/design-system-src
+          mkdir -p /tmp/design-system-src
+          unzip -q /tmp/design-system.zip -d /tmp/design-system-src
+          find /tmp/design-system-src -maxdepth 2 -type f | sort
+      - name: Publish package
+        run: |
+          rsync -a --delete --exclude='.git/' --exclude='.github/workflows/import-design-system.yml' /tmp/design-system-src/ ./
+          rm -f .github/workflows/import-design-system.yml
+          rmdir .github/workflows 2>/dev/null || true
+          rmdir .github 2>/dev/null || true
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'feat: publish design system'
+          git push origin HEAD:design-system
