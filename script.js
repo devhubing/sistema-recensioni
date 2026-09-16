@@ -15,6 +15,31 @@ addEventListener('scroll', queueProgress, { passive: true });
 addEventListener('resize', queueProgress);
 updateProgress();
 
+// Footer: reuse the design-system composition, adapted to the dentist landing copy.
+if (!document.querySelector('link[href="footer-design.css"]')) {
+  const footerStyles = document.createElement('link');
+  footerStyles.rel = 'stylesheet';
+  footerStyles.href = 'footer-design.css';
+  document.head.appendChild(footerStyles);
+}
+const landingFooter = document.querySelector('footer');
+if (landingFooter) {
+  landingFooter.className = 'design-footer';
+  landingFooter.innerHTML = `
+    <div class="footer-design-wrap">
+      <div class="footer-design-top">
+        <p>La reputazione del tuo studio può diventare una ragione in più per essere scelto.<br>Inizia dal Test di Preferibilità Locale™.</p>
+        <a class="footer-design-cta" href="#richiedi">Richiedi il test gratuito <span aria-hidden="true">↑</span></a>
+      </div>
+      <div class="footer-design-word" aria-label="Sistema Recensioni">sistema-recensioni<span class="footer-design-star" aria-hidden="true">✳</span></div>
+      <div class="footer-design-bottom">
+        <span>SISTEMA RECENSIONI / 2026</span>
+        <span>PREFERENZA LOCALE. REPUTAZIONE CHE LAVORA.</span>
+        <a href="#inizio">Torna su ↑</a>
+      </div>
+    </div>`;
+}
+
 // Native sticky positioning with offsets measured from the actual title and navbar.
 const receptionSection = document.querySelector('.reception-section');
 const receptionHeading = document.querySelector('.reception-title-bar');
