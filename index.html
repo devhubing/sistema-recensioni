@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>desgin-codex — Scegli una vista</title>
+  <style>
+    @font-face{font-family:Manrope;src:url('assets/manrope-500.ttf');font-weight:500;font-display:swap}
+    *{box-sizing:border-box}body{margin:0;background:#191919;color:#f2f0e9;font-family:Manrope,Arial,sans-serif;min-height:100svh;display:grid;place-items:center;padding:40px 28px}main{max-width:960px;width:100%}p{color:#aaa9a5;line-height:1.7}h1{font-size:clamp(36px,6vw,68px);font-weight:500;letter-spacing:-.06em;margin:22px 0}.eyebrow{color:#ff5264;font:11px Consolas,monospace;text-transform:uppercase;letter-spacing:.1em}.choices{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:34px}.theme{border:1px solid #51514d;border-radius:16px;padding:30px}.theme>p{margin-top:10px;margin-bottom:28px;font-size:13px}.theme h2{font-size:32px;letter-spacing:-.05em;font-weight:500;margin:0}.theme.light{background:#f2f0e9;color:#191919;border-color:#f2f0e9}.theme.light p{color:#68665f}.links{display:flex;flex-direction:column;gap:12px}a{display:flex;justify-content:space-between;align-items:center;padding:15px 18px;border-radius:999px;text-decoration:none;color:inherit;border:1px solid #807d75;font-size:13px;transition:transform .2s}a:hover{transform:translateY(-3px)}a:focus-visible{outline:3px solid #ff5264;outline-offset:5px}a.demo{background:#ff3045;color:#191919;border-color:#ff3045}.hint{font-size:11px;margin-top:24px}@media(max-width:600px){.choices{grid-template-columns:1fr}.theme{padding:25px}}@media(prefers-reduced-motion:reduce){a{transition:none}a:hover{transform:none}}
+  </style>
+</head>
+<body><main>
+  <span class="eyebrow">Desgin Codex / Un'identità, due atmosfere</span>
+  <h1>Scegli la tua luce.</h1>
+  <p>Il sistema da consultare, la demo da esplorare. In versione dark e light.</p>
+  <div class="choices">
+    <section class="theme"><h2>Dark<span style="color:#ff3045">.</span></h2><p>Carbone, superfici grafite e rosso deciso.</p><div class="links"><a class="demo" href="demo.html">Demo animata dark <span aria-hidden="true">↗</span></a><a href="desgin-codex.html">Design system dark <span aria-hidden="true">↗</span></a></div></section>
+    <section class="theme light"><h2>Light<span style="color:#c71930">.</span></h2><p>Avorio, superfici gesso e contrasti editoriali.</p><div class="links"><a class="demo" href="demo-light.html">Demo animata light <span aria-hidden="true">↗</span></a><a href="desgin-codex-light.html">Design system light <span aria-hidden="true">↗</span></a></div></section>
+  </div>
+  <p class="hint">Le animazioni e i componenti sono disponibili in entrambe le versioni. Puoi cambiare tema anche dall'intestazione di ogni pagina.</p>
+</main></body>
+</html>

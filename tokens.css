@@ -1,0 +1,37 @@
+/* desgin-codex / v.01 - Reusable design tokens. Manrope files in assets/. */
+:root {
+  --red: #ff3045;
+  --red-hover: #ff5264;
+  --red-deep: #c71930;
+  --dark: #191919;
+  --surface: #232323;
+  --elevated: #2d2d2d;
+  --paper: #f2f0e9;
+  --muted: #aaa9a5;
+  --line: #3d3d3b;
+  --success: #b3d9b3;
+  --warning: #eaca8a;
+  --font: 'Manrope',Arial,sans-serif;
+  --mono: 'SFMono-Regular',Consolas,'Liberation Mono',monospace;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+  --space-32: 128px;
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-pill: 999px;
+  --gutter: clamp(24px,4.6vw,88px);
+  --max: 1600px;
+  --ease-out: cubic-bezier(.22,1,.36,1);
+  --ease-in-out: cubic-bezier(.65,0,.35,1);
+  --duration-fast: 180ms;
+  --duration-base: 320ms;
+  --duration-reveal: 800ms;
+  --motion-scale: 1;
+}

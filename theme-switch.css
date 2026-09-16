@@ -1,0 +1,33 @@
+/* Shared navigation for the two explicit, offline-compatible theme variants. */
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 7px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: inherit;
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+  transition: border-color 180ms, background 180ms;
+}
+.theme-switch svg { width: 17px; height: 17px; flex-shrink: 0; }
+.theme-switch:hover { border-color: var(--red); background: rgb(255 48 69 / .07); }
+@media (max-width: 1100px) and (min-width: 761px) {
+  .topbar-inner { gap: 15px; }
+  .theme-switch { padding: 9px; }
+  .theme-switch span { display: none; }
+  .nav { gap: 15px; }
+}
+@media (max-width: 760px) {
+  .topbar { height: auto; }
+  .topbar-inner { flex-wrap: wrap; padding-block: 12px; gap: 10px; }
+  .topbar-inner > .brand { margin-right: auto; }
+  .header-tools { width: 100%; justify-content: flex-end; }
+  .header-tools .demo-entry { margin-right: auto; }
+  .nav { top: 100%; }
+  html { scroll-padding-top: 142px; }
+}
