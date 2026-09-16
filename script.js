@@ -18,7 +18,17 @@ updateProgress();
 // Native sticky positioning with offsets measured from the actual title and navbar.
 const receptionSection = document.querySelector('.reception-section');
 const receptionHeading = document.querySelector('.reception-title-bar');
+const receptionIntro = document.querySelector('.reception-intro');
 const siteHeader = document.querySelector('.topbar');
+
+// Keep both the section title and its explanatory copy visible while the cards stack.
+// Moving the intro inside the sticky heading also lets the existing ResizeObserver
+// measure the real combined height and keep the cards correctly offset at every width.
+if (receptionHeading && receptionIntro && !receptionHeading.contains(receptionIntro)) {
+  receptionHeading.appendChild(receptionIntro);
+  receptionIntro.style.margin = '18px 0 0';
+}
+
 if (receptionSection && receptionHeading && siteHeader) {
   const updateReceptionOffsets = () => {
     receptionSection.style.setProperty('--reception-nav-height', `${Math.ceil(siteHeader.getBoundingClientRect().height)}px`);
