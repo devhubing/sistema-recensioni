@@ -1,3 +1,0 @@
-/* Dashboard monitor mockup: preserve the PNG transparency and intrinsic proportions. */
-.dashboard-media{overflow:visible;background:transparent}
-.dashboard-media img{width:100%;height:auto;aspect-ratio:auto;object-fit:contain;border-radius:0;background:transparent}
