@@ -31,7 +31,7 @@ if (landingFooter) {
         <p>La reputazione del tuo studio può diventare una ragione in più per essere scelto.<br>Inizia dal Test di Preferibilità Locale™.</p>
         <a class="footer-design-cta" href="#richiedi">Richiedi il test gratuito <span aria-hidden="true">↑</span></a>
       </div>
-      <div class="footer-design-word" aria-label="Sistema Recensioni">sistema-recensioni<span class="footer-design-star" aria-hidden="true">✳</span></div>
+      <div class="footer-design-word" aria-label="Sistema Recensioni">sistema-recensioni<span class="footer-design-star" aria-hidden="true">✳&#xFE0E;</span></div>
       <div class="footer-design-bottom">
         <span>SISTEMA RECENSIONI / 2026</span>
         <span>PREFERENZA LOCALE. REPUTAZIONE CHE LAVORA.</span>
@@ -92,6 +92,72 @@ if (receptionSection && receptionHeading && siteHeader) {
     addEventListener('resize', updateReceptionOffsets, { passive: true });
   }
   if (document.fonts) document.fonts.ready.then(updateReceptionOffsets);
+}
+
+// Section 03: the steps pin under the navbar and vertical scroll slides them horizontally.
+// With reduced motion (or without JS) they stay as stacked full-screen panels.
+const systemWrap = document.querySelector('.system-steps-wrap');
+const systemTrack = systemWrap?.querySelector('.system-steps');
+if (systemWrap && systemTrack && 'IntersectionObserver' in window) {
+  const systemSteps = [...systemTrack.querySelectorAll('.system-step')];
+  const railItems = [...systemWrap.querySelectorAll('.system-rail-item')];
+  const lastIndex = systemSteps.length - 1;
+  systemWrap.style.setProperty('--steps', systemSteps.length);
+  systemTrack.querySelectorAll('.step-icon *').forEach(shape => shape.setAttribute('pathLength', '1'));
+  let systemQueued = false;
+  let systemListening = false;
+
+  const updateSystem = () => {
+    systemQueued = false;
+    if (!systemWrap.classList.contains('is-horizontal')) return;
+    const navHeight = Math.ceil(siteHeader?.getBoundingClientRect().height || 0);
+    systemWrap.style.setProperty('--nav-h', `${navHeight}px`);
+    const rect = systemWrap.getBoundingClientRect();
+    const pinHeight = innerHeight - navHeight;
+    const travel = Math.max(1, rect.height - pinHeight);
+    const progressValue = Math.min(1, Math.max(0, (navHeight - rect.top) / travel));
+    const position = progressValue * lastIndex;
+    systemTrack.style.transform = `translate3d(${(-position * 100) / systemSteps.length}%,0,0)`;
+    systemSteps.forEach((step, index) => {
+      step.style.setProperty('--d', Math.max(-1, Math.min(1, index - position)).toFixed(3));
+      if (position > index - 0.55) step.classList.add('is-seen');
+    });
+    const activeIndex = Math.round(position);
+    railItems.forEach((item, index) => {
+      item.style.setProperty('--fill', Math.max(0, Math.min(1, position - index + 1)).toFixed(3));
+      item.classList.toggle('is-active', index === activeIndex);
+    });
+  };
+  const queueSystem = () => {
+    if (!systemQueued) { systemQueued = true; requestAnimationFrame(updateSystem); }
+  };
+
+  const applySystemMode = () => {
+    const horizontal = !motionPreference.matches;
+    systemWrap.classList.toggle('is-horizontal', horizontal);
+    systemTrack.classList.toggle('is-enhanced', horizontal);
+    if (!horizontal) {
+      systemTrack.style.transform = '';
+      systemSteps.forEach(step => step.classList.add('is-seen'));
+    }
+    queueSystem();
+  };
+  applySystemMode();
+  motionPreference.addEventListener('change', applySystemMode);
+
+  new IntersectionObserver(entries => {
+    const inView = entries[0].isIntersecting;
+    if (inView && !systemListening) {
+      addEventListener('scroll', queueSystem, { passive: true });
+      addEventListener('resize', queueSystem);
+      systemListening = true;
+      queueSystem();
+    } else if (!inView && systemListening) {
+      removeEventListener('scroll', queueSystem);
+      removeEventListener('resize', queueSystem);
+      systemListening = false;
+    }
+  }).observe(systemWrap);
 }
 
 if ('IntersectionObserver' in window) {

@@ -1,7 +1,7 @@
 .design-footer{padding-top:55px;padding-bottom:26px;background:var(--red);color:var(--dark);overflow:hidden;border-top:0}
 .design-footer .footer-design-wrap{width:min(calc(100% - var(--gutter)*2),1600px);margin-inline:auto}
 .footer-design-top{display:flex;justify-content:space-between;gap:25px;align-items:center}
-.footer-design-top p{font-size:13px;line-height:1.6;max-width:390px;color:var(--dark)}
+.footer-design-top p{font-size:13px;line-height:1.6;max-width:490px;color:var(--dark)}
 .footer-design-cta{display:inline-flex;align-items:center;justify-content:center;gap:30px;min-height:50px;padding:13px 23px;border:1px solid transparent;border-radius:var(--radius-pill);font-size:12px;font-weight:700;line-height:1.4;background:var(--dark);color:var(--paper);text-transform:none;transition:background .32s,color .32s,transform .32s;white-space:nowrap}
 .footer-design-cta:hover{background:#2a2a2a;transform:translateY(-2px)}
 .footer-design-cta span{font-size:18px;font-weight:400;line-height:1;transition:transform .32s}
