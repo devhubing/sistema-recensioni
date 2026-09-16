@@ -40,6 +40,30 @@ if (landingFooter) {
     </div>`;
 }
 
+// Dashboard mockup: use the high-quality transparent WEBP and preserve its natural proportions.
+const dashboardFigure = document.querySelector('.dashboard-media');
+const dashboardImage = dashboardFigure?.querySelector('img');
+if (dashboardFigure && dashboardImage) {
+  dashboardFigure.classList.remove('media-slot');
+  dashboardImage.src = 'assets/dashboard.webp';
+  dashboardImage.removeAttribute('width');
+  dashboardImage.removeAttribute('height');
+  dashboardImage.style.width = '100%';
+  dashboardImage.style.maxWidth = '100%';
+  dashboardImage.style.height = 'auto';
+  dashboardImage.style.aspectRatio = 'auto';
+  dashboardImage.style.objectFit = 'contain';
+  dashboardImage.style.borderRadius = '0';
+}
+
+// Contact form cleanup requested for the dentist landing.
+const contactStar = document.querySelector('.contact-star');
+if (contactStar) contactStar.remove();
+const priorityFieldset = [...document.querySelectorAll('#studio-form fieldset')].find(fieldset =>
+  fieldset.querySelector('legend')?.textContent.trim().toLowerCase().startsWith('priorità nei prossimi 12 mesi')
+);
+if (priorityFieldset) priorityFieldset.remove();
+
 // Native sticky positioning with offsets measured from the actual title and navbar.
 const receptionSection = document.querySelector('.reception-section');
 const receptionHeading = document.querySelector('.reception-title-bar');
