@@ -1,0 +1,36 @@
+name: Import landing dentisti
+
+on:
+  push:
+    branches:
+      - landing-dentisti
+    paths:
+      - .github/workflows/import-landing.yml
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: landing-dentisti
+          fetch-depth: 0
+
+      - name: Download landing archive
+        run: |
+          curl -L --fail --retry 3 -o /tmp/landing-runtime.zip "https://at.adobe.com/RJpi5oNeKr3mM7kr"
+          unzip -t /tmp/landing-runtime.zip
+
+      - name: Import landing files
+        run: |
+          unzip -o /tmp/landing-runtime.zip -d .
+          rm -f .github/workflows/import-landing.yml
+          git add -A
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "feat: publish landing dentisti"
+          git push origin HEAD:landing-dentisti
