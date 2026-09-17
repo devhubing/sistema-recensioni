@@ -281,6 +281,17 @@
 .suggestions .suggestion-note{cursor:default;color:var(--muted)}
 .form-trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
 #studio-form>.btn:disabled{opacity:.65;cursor:progress;transform:none}
+/* GDPR consents: privacy notice (required) and marketing (optional, separate). */
+.consents{display:grid;gap:10px;margin:2px 0 20px}
+.consent{display:flex;align-items:flex-start;gap:10px;font-size:12px;line-height:1.55;color:var(--muted)}
+.consent input[type=checkbox]{margin-top:2px}
+.consent label{cursor:pointer}
+.consent a{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
+.consent a:hover{color:var(--accent-text)}
+.consent-required{color:var(--accent-text);font-weight:700}
+.consent-optional{color:#8a857a}
+.consent input[aria-invalid=true]{outline:2px solid var(--error);outline-offset:2px}
+.consents .field-error{margin:-4px 0 0 26px}
 .turnstile-slot{display:flex;justify-content:center}
 .turnstile-slot iframe{margin-bottom:16px}
 @media(min-width:801px) and (max-height:770px){#studio-form .field>.field-label{margin-bottom:5px}}

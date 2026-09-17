@@ -355,7 +355,7 @@ const studioInput = document.getElementById('studio');
 const placeIdInput = document.getElementById('place-id');
 const suggestionList = document.getElementById('studio-suggerimenti');
 const fields = ['studio', 'nome', 'cognome', 'email', 'telefono'].map(id => document.getElementById(id));
-const serverFields = { place_id: 'studio', studio: 'studio', nome: 'nome', cognome: 'cognome', email: 'email', telefono: 'telefono' };
+const serverFields = { place_id: 'studio', studio: 'studio', nome: 'nome', cognome: 'cognome', email: 'email', telefono: 'telefono', privacy: 'privacy' };
 let suggestions = [];
 let activeSuggestion = -1;
 let suggestTimer;
@@ -527,6 +527,10 @@ form.addEventListener('submit', async event => {
     setFieldError(field.id, message);
     if (message && !firstInvalid) firstInvalid = field;
   });
+  // GDPR: the privacy notice must be acknowledged; marketing consent stays optional.
+  const privacyInput = document.getElementById('privacy');
+  setFieldError('privacy', privacyInput.checked ? '' : 'Per inviare la richiesta conferma di aver letto l’informativa privacy.');
+  if (!privacyInput.checked && !firstInvalid) firstInvalid = privacyInput;
   if (firstInvalid) { status.textContent = ''; firstInvalid.focus(); return; }
 
   form.dataset.sending = 'true';
@@ -550,6 +554,9 @@ form.addEventListener('submit', async event => {
       fonte: form.dataset.fonte || '',
       nota_interna: document.getElementById('nota-interna').value,
       turnstile_token: turnstileTokenValue,
+      privacy: document.getElementById('privacy').checked,
+      privacy_url: document.getElementById('privacy-link').href,
+      marketing: document.getElementById('marketing').checked,
     };
     tokenSent = Boolean(turnstileTokenValue);
     const response = await fetch(`${api}/richieste`, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) });
@@ -589,5 +596,5 @@ form.addEventListener('submit', async event => {
 form.addEventListener('input', event => {
   if (!form.dataset.sending) status.textContent = '';
   const field = event.target;
-  if (fields.includes(field)) setFieldError(field.id, '');
+  if (fields.includes(field) || field.id === 'privacy') setFieldError(field.id, '');
 });
