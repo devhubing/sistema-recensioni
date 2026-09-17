@@ -1,0 +1,59 @@
+/* Pagine secondarie della landing: informativa privacy e ringraziamento. Stessi token e stili della landing. */
+.page-main{padding-block:72px 104px}
+
+/* Informativa privacy */
+.legal{max-width:880px}
+.legal-head{padding-bottom:36px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+.legal-head h1{font-size:clamp(40px,5vw,64px)}
+.legal-lead{margin-top:24px;font-size:17px;color:var(--muted);max-width:720px}
+.legal-updated{margin-top:14px;font:11px/1.6 var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.legal section{padding-block:30px;border-bottom:1px solid var(--line)}
+.legal h2{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.3;text-transform:none;margin-bottom:14px}
+.legal p{font-size:15px;color:#3f3d38;max-width:760px}
+.legal p+p{margin-top:12px}
+.legal a{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
+.legal a:hover{color:var(--accent-text)}
+.legal-list{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.legal-list li{position:relative;padding-left:20px;font-size:15px;color:#3f3d38;line-height:1.7}
+.legal-list li::before{content:'';position:absolute;left:2px;top:.72em;width:6px;height:6px;border-radius:50%;background:var(--red)}
+.legal-list+p{margin-top:14px}
+.legal p+.legal-list{margin-top:14px}
+.legal-table{display:grid;border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;background:var(--surface);margin-bottom:16px}
+.legal-row{display:grid;grid-template-columns:1.25fr 1fr;gap:0}
+.legal-row+.legal-row{border-top:1px solid var(--line)}
+.legal-row span{padding:14px 18px;font-size:14px;line-height:1.6;color:#3f3d38}
+.legal-row span+span{border-left:1px solid var(--line)}
+.legal-row-head span{font:11px/1.6 var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--paper)}
+.legal .legal-back{margin-top:40px}
+.legal .legal-back a{color:var(--dark);text-decoration:none}
+
+/* Pagina di ringraziamento */
+.thanks{display:flex;justify-content:center}
+.thanks-card{width:100%;max-width:860px;padding:56px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-md)}
+.thanks-check{display:grid;place-items:center;width:64px;height:64px;margin-bottom:30px;border-radius:50%;background:var(--red)}
+.thanks-check svg{width:32px;height:32px;fill:none;stroke:var(--dark);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.thanks-card h1{font-size:clamp(42px,5.4vw,72px)}
+.thanks-lead{margin-top:24px;font-size:17px;color:var(--muted);max-width:680px}
+.thanks-lead strong{color:var(--ink)}
+.thanks-steps{list-style:none;margin:40px 0 0;padding:0;border-top:1px solid var(--line)}
+.thanks-steps li{display:flex;gap:22px;padding:22px 0;border-bottom:1px solid var(--line)}
+.thanks-step-n{font:12px/1.9 var(--mono);color:var(--accent-text);flex-shrink:0}
+.thanks-steps h2{font-size:20px;font-weight:700;letter-spacing:-.02em;line-height:1.3;text-transform:none;margin-bottom:6px}
+.thanks-steps p{font-size:14px;color:var(--muted);line-height:1.7}
+.thanks-note{margin:28px 0 30px;font-size:13px;color:var(--muted)}
+.thanks-note a{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
+
+@media(max-width:760px){
+  .page-main{padding-block:44px 64px}
+  .legal-lead,.thanks-lead{font-size:15px}
+  .legal section{padding-block:24px}
+  .legal h2{font-size:19px}
+  .legal p,.legal-list li{font-size:14px}
+  .legal-row{grid-template-columns:1fr}
+  .legal-row span+span{border-left:0;border-top:1px dashed var(--line);color:var(--muted)}
+  .legal-row-head{display:none}
+  .thanks-card{padding:32px 22px}
+  .thanks-check{width:54px;height:54px;margin-bottom:24px}
+  .thanks-steps li{gap:14px}
+  .thanks-card .btn{width:100%;font-size:11px;padding-inline:20px}
+}

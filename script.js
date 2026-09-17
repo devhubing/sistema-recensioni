@@ -35,6 +35,7 @@ if (landingFooter) {
       <div class="footer-design-bottom">
         <span>SISTEMA RECENSIONI / 2026</span>
         <span>PREFERENZA LOCALE. REPUTAZIONE CHE LAVORA.</span>
+        <a href="privacy.html">Informativa privacy</a>
         <a href="#inizio">Torna su ↑</a>
       </div>
     </div>`;
@@ -566,6 +567,8 @@ form.addEventListener('submit', async event => {
       placeIdInput.value = '';
       suggestions = [];
       status.textContent = 'Richiesta ricevuta. Analizziamo il tuo studio e ti inviamo le due analisi all’email indicata.';
+      // Thank-you page: the inline message stays as fallback when no URL is set.
+      if (form.dataset.grazieUrl) location.assign(form.dataset.grazieUrl);
       return;
     }
     if (response.status === 422 && body.errors) {

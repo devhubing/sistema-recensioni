@@ -35,7 +35,9 @@ Il modulo parla con le rotte pubbliche della webapp Prospect, senza token nella 
 Come funziona:
 
 - **Nome dello studio (come appari su Google)**: dopo tre caratteri chiede i suggerimenti a `…/suggerimenti` (Google Places del sub-account). Lo studio va scelto dall'elenco, con mouse o frecce e Invio: senza una scheda scelta il modulo non parte.
-- **Invio**: `POST …/richieste` con scheda, nome, cognome, email, telefono e zona (`quartiere`, `citta`, `provincia`). In Prospect la scheda diventa un target con fonte `landing` e la persona diventa il contatto GHL, sincronizzato da Prospect via API.
+- **Invio**: `POST …/richieste` con scheda, nome, cognome, email, telefono e consensi. In Prospect la scheda diventa un target con la fonte del form e la persona diventa il contatto GHL, sincronizzato da Prospect via API.
+- **Consensi GDPR**: casella obbligatoria di presa visione dell'informativa (link a `privacy.html`) e casella facoltativa per le comunicazioni commerciali. Prospect conserva data, URL dell'informativa e scelta sul marketing come prova.
+- **Dopo l'invio**: il form porta alla pagina di ringraziamento indicata in `data-grazie-url` (`grazie.html`). Senza l'attributo resta il messaggio sotto il pulsante.
 - **Fonte del lead**: `data-fonte` sul form («Landing dentisti») diventa la fonte del target in Prospect, così i lead di questa landing si distinguono da quelli delle altre.
 - **Cloudflare Turnstile**: se `data-turnstile-sitekey` sul form ha un valore, la pagina carica il widget (visibile solo quando Cloudflare chiede un'interazione) e manda il token con l'invio. Il token vale una volta: dopo ogni tentativo se ne chiede uno nuovo. Con l'attributo vuoto il widget non si carica.
 - Il campo nascosto `nota_interna` è un'esca per i bot: le persone non lo vedono.
@@ -50,8 +52,14 @@ Tutto si configura in Prospect, **Impostazioni account → Landing**:
 
 Dettagli in `Docs/15-api.md` del repository Prospect.
 
-## Prima della pubblicazione
+## Pagine collegate
 
-Mancano le informazioni privacy appropriate al trattamento dei dati raccolti dal modulo. Le immagini estratte dal PDF possono essere sostituite con gli originali mantenendo gli stessi nomi e rapporti.
+- `privacy.html`: informativa privacy del modulo (titolare HUBING S.R.L.), linkata dal form e dal footer. Il testo è una bozza da far rivedere a chi cura la privacy, in particolare i tempi di conservazione.
+- `grazie.html`: pagina di ringraziamento dopo l'invio, con i prossimi passi.
+- `pagine.css`: stili comuni alle due pagine, sopra `styles.css` e `footer-design.css`.
+
+In GHL ogni pagina è uno step del funnel: i link locali (`index.html`, `privacy.html`, `grazie.html`) diventano `/`, `/privacy` e `/grazie`.
+
+Le immagini estratte dal PDF possono essere sostituite con gli originali mantenendo gli stessi nomi e rapporti.
 
 La cartella `qa/` contiene le pagine renderizzate e il testo estratto dal PDF, oltre alle verifiche della landing. Nessuna cartella preesistente è stata modificata.
