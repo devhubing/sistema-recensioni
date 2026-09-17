@@ -36,6 +36,7 @@ Come funziona:
 
 - **Nome dello studio (come appari su Google)**: dopo tre caratteri chiede i suggerimenti a `…/suggerimenti` (Google Places del sub-account). Lo studio va scelto dall'elenco, con mouse o frecce e Invio: senza una scheda scelta il modulo non parte.
 - **Invio**: `POST …/richieste` con scheda, nome, cognome, email, telefono e zona (`quartiere`, `citta`, `provincia`). In Prospect la scheda diventa un target con fonte `landing` e la persona diventa il contatto GHL, sincronizzato da Prospect via API.
+- **Fonte del lead**: `data-fonte` sul form («Landing dentisti») diventa la fonte del target in Prospect, così i lead di questa landing si distinguono da quelli delle altre.
 - **Cloudflare Turnstile**: se `data-turnstile-sitekey` sul form ha un valore, la pagina carica il widget (visibile solo quando Cloudflare chiede un'interazione) e manda il token con l'invio. Il token vale una volta: dopo ogni tentativo se ne chiede uno nuovo. Con l'attributo vuoto il widget non si carica.
 - Il campo nascosto `nota_interna` è un'esca per i bot: le persone non lo vedono.
 - Gli errori del server tornano sotto i rispettivi campi. Dominio non autorizzato, landing spenta, verifica anti-spam fallita, limiti di frequenza e problemi di rete hanno un messaggio dedicato.

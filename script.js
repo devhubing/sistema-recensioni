@@ -555,6 +555,7 @@ form.addEventListener('submit', async event => {
       telefono: document.getElementById('telefono').value.trim(),
       zona: area.value,
       priorita: [...form.querySelectorAll('input[name="priorita"]:checked')].map(input => input.value),
+      fonte: form.dataset.fonte || '',
       nota_interna: document.getElementById('nota-interna').value,
       turnstile_token: turnstileTokenValue,
     };
