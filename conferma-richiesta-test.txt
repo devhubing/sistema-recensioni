@@ -1,0 +1,16 @@
+Buongiorno {{contact.name}},
+
+grazie per aver richiesto il Test di Preferibilità Locale™ per {{contact.ragione_sociale}}.
+Stiamo analizzando la sua attività e preparando le due analisi:
+
+• Analisi della Reputazione
+• Analisi Competitiva Locale
+
+Le serviranno a capire quali sono i suoi punti di forza online e come si presenta rispetto alle altre attività della zona. Riceverà un’email appena saranno disponibili.
+
+A presto.
+
+--
+Sistema Recensioni
+Preferenza locale. Reputazione che lavora.
+Ha ricevuto questa email perché ha richiesto il Test di Preferibilità Locale™ per {{contact.ragione_sociale}}.
