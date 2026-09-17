@@ -3,7 +3,7 @@
   color-scheme: light;
   --red: #ff3045;
   --red-hover: #ff5264;
-  --red-deep: #c71930;
+  --red-deep: var(--red); /* single brand red: #ff3045 everywhere */
   --dark: #191919;
   --surface: #fffdf8;
   --elevated: #e7e3d9;
@@ -37,6 +37,6 @@
   --motion-scale: 1;
   --canvas: #f2f0e9;
   --ink: #191919;
-  --error: #b7182e;
-  --accent-text: #c71930;
+  --error: var(--red);
+  --accent-text: var(--red);
 }

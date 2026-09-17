@@ -40,18 +40,16 @@ if (landingFooter) {
     </div>`;
 }
 
-// Dashboard mockup: use the high-quality transparent WEBP and preserve its natural proportions.
+// Dashboard mockup: use the high-quality transparent WEBP. Its 3:2 space (width/height attributes and CSS
+// aspect-ratio) is reserved before it loads, so the lazy image never shifts the sections below it.
 const dashboardFigure = document.querySelector('.dashboard-media');
 const dashboardImage = dashboardFigure?.querySelector('img');
 if (dashboardFigure && dashboardImage) {
   dashboardFigure.classList.remove('media-slot');
   dashboardImage.src = 'assets/dashboard.webp';
-  dashboardImage.removeAttribute('width');
-  dashboardImage.removeAttribute('height');
   dashboardImage.style.width = '100%';
   dashboardImage.style.maxWidth = '100%';
   dashboardImage.style.height = 'auto';
-  dashboardImage.style.aspectRatio = 'auto';
   dashboardImage.style.objectFit = 'contain';
   dashboardImage.style.borderRadius = '0';
 }
@@ -309,6 +307,43 @@ if ('IntersectionObserver' in window) {
     });
   }, { threshold: 0.08 });
   document.querySelectorAll('.reveal').forEach(element => reveals.observe(element));
+}
+
+// Links to the final box (#richiedi): frame the whole box under the navbar on every screen. Centered in the
+// space below the navbar when it fits, otherwise aligned just under it (e.g. stacked on mobile).
+const contactBox = document.querySelector('.contact-grid');
+function contactBoxScrollTop() {
+  const navHeight = siteHeader?.getBoundingClientRect().height || 0;
+  const box = contactBox.getBoundingClientRect();
+  const available = innerHeight - navHeight;
+  const gap = box.height <= available - 32 ? (available - box.height) / 2 : 16;
+  const maxScroll = document.documentElement.scrollHeight - innerHeight;
+  return Math.round(Math.max(0, Math.min(maxScroll, scrollY + box.top - navHeight - gap)));
+}
+function frameContactBox(smooth) {
+  scrollTo({ top: contactBoxScrollTop(), behavior: smooth && !motionPreference.matches ? 'smooth' : 'instant' });
+  // Once the scroll settles, correct any small layout shift that happened on the way (fonts, late images).
+  let lastY = scrollY;
+  let stillFrames = 0;
+  let moved = false;
+  const started = performance.now();
+  const settle = () => {
+    if (Math.abs(scrollY - lastY) >= 1) { moved = true; stillFrames = 0; } else { stillFrames++; }
+    lastY = scrollY;
+    const waiting = (!moved && performance.now() - started < 400) || stillFrames < 6;
+    if (waiting && performance.now() - started < 4000) { requestAnimationFrame(settle); return; }
+    const target = contactBoxScrollTop();
+    if (Math.abs(target - scrollY) > 2 && Math.abs(target - scrollY) < 400) scrollTo({ top: target, behavior: 'instant' });
+  };
+  requestAnimationFrame(settle);
+}
+if (contactBox) {
+  document.querySelectorAll('a[href="#richiedi"]').forEach(link => link.addEventListener('click', event => {
+    event.preventDefault();
+    if (location.hash !== '#richiedi') history.pushState(null, '', '#richiedi');
+    frameContactBox(true);
+  }));
+  if (location.hash === '#richiedi') addEventListener('load', () => frameContactBox(false));
 }
 
 // Local validation only. No endpoint or Google Places credentials were supplied.
