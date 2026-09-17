@@ -355,7 +355,7 @@ const studioInput = document.getElementById('studio');
 const placeIdInput = document.getElementById('place-id');
 const suggestionList = document.getElementById('studio-suggerimenti');
 const fields = ['studio', 'nome', 'cognome', 'email', 'telefono'].map(id => document.getElementById(id));
-const serverFields = { place_id: 'studio', studio: 'studio', nome: 'nome', cognome: 'cognome', email: 'email', telefono: 'telefono', zona: 'zona' };
+const serverFields = { place_id: 'studio', studio: 'studio', nome: 'nome', cognome: 'cognome', email: 'email', telefono: 'telefono' };
 let suggestions = [];
 let activeSuggestion = -1;
 let suggestTimer;
@@ -405,10 +405,6 @@ function resetTurnstile() {
 function setFieldError(id, message) {
   const error = document.getElementById(`${id}-error`);
   if (error) error.textContent = message;
-  if (id === 'zona') {
-    form.querySelectorAll('[name="zona"]').forEach(input => { input.setAttribute('aria-invalid', String(Boolean(message))); input.setAttribute('aria-describedby', 'zona-error'); });
-    return;
-  }
   const field = document.getElementById(id);
   if (message) field?.setAttribute('aria-invalid', 'true'); else field?.removeAttribute('aria-invalid');
 }
@@ -531,9 +527,6 @@ form.addEventListener('submit', async event => {
     setFieldError(field.id, message);
     if (message && !firstInvalid) firstInvalid = field;
   });
-  const area = form.querySelector('input[name="zona"]:checked');
-  setFieldError('zona', area ? '' : 'Scegli quartiere, città o provincia.');
-  if (!area && !firstInvalid) firstInvalid = form.querySelector('[name="zona"]');
   if (firstInvalid) { status.textContent = ''; firstInvalid.focus(); return; }
 
   form.dataset.sending = 'true';
@@ -553,7 +546,6 @@ form.addEventListener('submit', async event => {
       cognome: document.getElementById('cognome').value.trim(),
       email: document.getElementById('email').value.trim(),
       telefono: document.getElementById('telefono').value.trim(),
-      zona: area.value,
       priorita: [...form.querySelectorAll('input[name="priorita"]:checked')].map(input => input.value),
       fonte: form.dataset.fonte || '',
       nota_interna: document.getElementById('nota-interna').value,
@@ -579,7 +571,7 @@ form.addEventListener('submit', async event => {
         const id = serverFields[key.split('.')[0]];
         if (!id) return;
         setFieldError(id, messages[0]);
-        firstError ??= id === 'zona' ? form.querySelector('[name="zona"]') : document.getElementById(id);
+        firstError ??= document.getElementById(id);
       });
       status.textContent = 'Controlla i campi evidenziati.';
       firstError?.focus();
@@ -598,5 +590,4 @@ form.addEventListener('input', event => {
   if (!form.dataset.sending) status.textContent = '';
   const field = event.target;
   if (fields.includes(field)) setFieldError(field.id, '');
-  if (field.name === 'zona') setFieldError('zona', '');
 });
