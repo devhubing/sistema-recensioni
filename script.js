@@ -31,7 +31,7 @@ if (landingFooter) {
         <p>La reputazione del tuo studio può diventare una ragione in più per essere scelto.<br>Inizia dal Test di Preferibilità Locale™.</p>
         <a class="footer-design-cta" href="#richiedi">Richiedi il test gratuito <span aria-hidden="true">↑</span></a>
       </div>
-      <div class="footer-design-word" aria-label="Sistema Recensioni">sistema-recensioni<span class="footer-design-star" aria-hidden="true">✳&#xFE0E;</span></div>
+      <div class="footer-design-word" aria-label="Sistema Recensioni">Sistema Recensioni<span class="footer-design-star" aria-hidden="true">✳&#xFE0E;</span></div>
       <div class="footer-design-bottom">
         <span>SISTEMA RECENSIONI / 2026</span>
         <span>PREFERENZA LOCALE. REPUTAZIONE CHE LAVORA.</span>
@@ -183,10 +183,10 @@ function createPinnedSequence({ wrap, count, pinnedClass, hold = 0.45, move = 0.
 const clamp01 = value => Math.min(1, Math.max(0, value));
 
 // Section 02: Volano della Preferenza. Scroll walks steps 1 -> 6 around the wheel and then closes the loop
-// back on step 1. While still pinned, the outro card slides up over the wheel.
-const VOLANO_TAIL = 0.9; // screens; keep in sync with the outro's negative margin in styles.css (90svh)
+// back on step 1. While still pinned, the "Il sistema" intro slides up over the wheel like a card.
+const VOLANO_TAIL = 0.9; // screens; keep in sync with the 90svh card overlaps in styles.css
 const volano = document.querySelector('.volano');
-const volanoOutro = document.querySelector('.volano-outro');
+const systemSection = document.querySelector('.system-section');
 if (volano && 'IntersectionObserver' in window) {
   const volanoSteps = [...volano.querySelectorAll('.volano-step')];
   const volanoNodes = [...volano.querySelectorAll('.volano-node')];
@@ -229,36 +229,38 @@ if (volano && 'IntersectionObserver' in window) {
         step.setAttribute('aria-hidden', String(index !== activeIndex));
       });
       volanoBars.forEach((bar, index) => bar.style.setProperty('--fill', clamp01(position - index + 1).toFixed(4)));
-      // 0 -> 1 while the outro card rises over the pinned wheel.
-      if (volanoOutro) {
-        const cover = clamp01((innerHeight - volanoOutro.getBoundingClientRect().top) / (innerHeight * VOLANO_TAIL));
+      // 0 -> 1 while the "Il sistema" card rises over the pinned wheel.
+      if (systemSection) {
+        const cover = clamp01((innerHeight - systemSection.getBoundingClientRect().top) / (innerHeight * VOLANO_TAIL));
         volano.style.setProperty('--cover', cover.toFixed(3));
       }
     }
   });
 }
 
-// The outro then sticks and the "Il sistema" intro slides over it. It sticks under the navbar, or later
+// A block sticks while the next section slides over it like a card. It sticks under the navbar, or later
 // if it is taller than the viewport, so its last line is always read before being covered.
-const systemSection = document.querySelector('.system-section');
-if (volano && volanoOutro && systemSection) {
+function stickWhileCovered(stuck, coveringSection) {
   const header = document.querySelector('.topbar');
-  let outroQueued = false;
-  const updateOutro = () => {
-    outroQueued = false;
+  let queued = false;
+  const update = () => {
+    queued = false;
     if (!volano.classList.contains('is-pinned')) return;
     const navHeight = Math.ceil(header?.getBoundingClientRect().height || 0);
-    volanoOutro.style.setProperty('--stick-top', `${Math.min(navHeight, innerHeight - volanoOutro.offsetHeight)}px`);
-    const cover = clamp01((innerHeight - systemSection.getBoundingClientRect().top) / (innerHeight * VOLANO_TAIL));
-    volanoOutro.style.setProperty('--cover', cover.toFixed(3));
+    stuck.style.setProperty('--stick-top', `${Math.min(navHeight, innerHeight - stuck.offsetHeight)}px`);
+    const cover = clamp01((innerHeight - coveringSection.getBoundingClientRect().top) / (innerHeight * VOLANO_TAIL));
+    stuck.style.setProperty('--cover', cover.toFixed(3));
   };
-  const queueOutro = () => {
-    if (!outroQueued) { outroQueued = true; requestAnimationFrame(updateOutro); }
+  const queue = () => {
+    if (!queued) { queued = true; requestAnimationFrame(update); }
   };
-  addEventListener('scroll', queueOutro, { passive: true });
-  addEventListener('resize', queueOutro);
-  queueOutro();
+  addEventListener('scroll', queue, { passive: true });
+  addEventListener('resize', queue);
+  queue();
 }
+// The dark intro sticks and the pinned wheel slides over it.
+const volanoIntro = document.querySelector('.flywheel-intro');
+if (volano && volanoIntro) stickWhileCovered(volanoIntro, volano);
 
 // Section 03: the steps pin under the navbar and vertical scroll slides them horizontally.
 // With reduced motion (or without JS) they stay as stacked full-screen panels.
