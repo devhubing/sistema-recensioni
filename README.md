@@ -29,8 +29,8 @@ Apri `index.html` nel browser. La cartella è autonoma: HTML, CSS, JavaScript, f
 
 Il modulo parla con le rotte pubbliche della webapp Prospect, senza token nella pagina. L'indirizzo è in `data-api` sul `<form id="studio-form">`:
 
-- oggi punta a staging: `https://staging.sistemarecensioni.it/api/v1/landing/eZ3AlcoxddCWelo8pbmB`;
-- per la produzione basta sostituire il dominio con `app2.sistemarecensioni.it`, lasciando uguale la location.
+- oggi punta alla produzione: `https://app2.sistemarecensioni.it/api/v1/landing/eZ3AlcoxddCWelo8pbmB`;
+- per provare su staging basta sostituire il dominio con `staging.sistemarecensioni.it`, lasciando uguale la location.
 
 Come funziona:
 
