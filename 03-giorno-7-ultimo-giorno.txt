@@ -1,0 +1,4 @@
+Buongiorno {{contact.first_name}}, le scrivo perché oggi è l’ultimo giorno in cui posso mantenere attiva per lei l’offerta riservata su Sistema Recensioni. Può ancora attivarlo a 90 €/mese anziché 189 €/mese.
+Se la proposta risponde a ciò che stava cercando, questo è il momento migliore per partire e iniziare a lavorare sull’obiettivo che ci siamo dati: rendere la vostra attività più riconoscibile e preferibile rispetto alle alternative della zona.
+Può confermare direttamente da qui: {{contact.link_di_pagamento_stripe}}
+Se invece ha ancora qualche dubbio, mi scriva pure

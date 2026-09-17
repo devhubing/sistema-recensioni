@@ -1,0 +1,7 @@
+Buongiorno {{contact.first_name}}, ripensando alla proposta di Sistema Recensioni, c’è un punto che vorrei sottolineare.
+Chi è già vostro cliente sa perché scegliervi. Il nostro lavoro è fare in modo che quel valore venga percepito anche da chi oggi vi confronta con altre attività della zona.
+Ogni esperienza positiva dei vostri clienti può diventare un motivo concreto per pensare: “È l’attività che fa per me”.
+L’obiettivo è diventare la scelta preferita di chi sta cercando un’attività come la vostra.
+Come le anticipavo, in questo momento può attivare Sistema Recensioni a 90 €/mese anziché 189 €/mese.
+Se vuole partire, può procedere direttamente da qui: {{contact.link_di_pagamento_stripe}}
+Se invece c’è qualcosa che vorrebbe approfondire prima di decidere, mi scriva pure.

@@ -1,0 +1,5 @@
+Buongiorno {{contact.first_name}}, la fiducia dei vostri clienti è un patrimonio che avete già costruito. Se però quelle esperienze non vengono raccolte e valorizzate con continuità, una parte di quel valore rimane invisibile proprio nel momento in cui un nuovo cliente deve scegliere tra voi e un’altra attività.
+Sistema Recensioni serve proprio a trasformare questo patrimonio in qualcosa che lavora nel tempo: coinvolgendo il team, facilitando la raccolta delle recensioni e dando continuità al processo.
+Ogni esperienza non valorizzata oggi è una prova in meno a vostro favore domani.
+Le ricordo che l'offerta riservata di 90 €/mese anziché 189 €/mese resterà disponibile ancora per 2 giorni.
+Se vuole approfittarne, può procedere direttamente da qui: {{contact.link_di_pagamento_stripe}}
