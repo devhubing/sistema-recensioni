@@ -281,4 +281,6 @@
 .suggestions .suggestion-note{cursor:default;color:var(--muted)}
 .form-trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
 #studio-form>.btn:disabled{opacity:.65;cursor:progress;transform:none}
+.turnstile-slot{display:flex;justify-content:center}
+.turnstile-slot iframe{margin-bottom:16px}
 @media(min-width:801px) and (max-height:770px){#studio-form .field>.field-label{margin-bottom:5px}}

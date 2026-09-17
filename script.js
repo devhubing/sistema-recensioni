@@ -361,6 +361,47 @@ let activeSuggestion = -1;
 let suggestTimer;
 let suggestRequest;
 
+// Error text for the API refusals that are not field validation.
+function apiProblem(statusCode, fallback) {
+  if (statusCode === 403) return 'Questo sito non è autorizzato a inviare richieste. Contattaci direttamente.';
+  if (statusCode === 404) return 'Il modulo non è attivo in questo momento. Riprova più tardi.';
+  if (statusCode === 429) return 'Troppe richieste ravvicinate: riprova tra un minuto.';
+  return fallback;
+}
+
+// Cloudflare Turnstile: loaded only when the form carries a site key. Tokens are single use.
+const turnstileSiteKey = (form.dataset.turnstileSitekey || '').trim();
+const turnstileSlot = document.getElementById('turnstile-slot');
+let turnstileWidget = null;
+let turnstileToken = '';
+let turnstileWaiters = [];
+if (turnstileSiteKey && turnstileSlot) {
+  window.onSistemaRecensioniTurnstile = () => {
+    turnstileWidget = window.turnstile.render(turnstileSlot, {
+      sitekey: turnstileSiteKey,
+      action: 'landing-lead',
+      language: 'it',
+      theme: 'light',
+      appearance: 'interaction-only',
+      callback: token => { turnstileToken = token; turnstileWaiters.splice(0).forEach(resolve => resolve(token)); },
+      'expired-callback': () => { turnstileToken = ''; },
+      'error-callback': () => { turnstileToken = ''; },
+    });
+  };
+  const turnstileScript = document.createElement('script');
+  turnstileScript.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onSistemaRecensioniTurnstile';
+  turnstileScript.async = true;
+  document.head.append(turnstileScript);
+}
+function turnstileReady(timeout = 10000) {
+  if (!turnstileSiteKey || turnstileToken) return Promise.resolve(turnstileToken);
+  return new Promise(resolve => { turnstileWaiters.push(resolve); setTimeout(() => resolve(turnstileToken), timeout); });
+}
+function resetTurnstile() {
+  turnstileToken = '';
+  if (turnstileWidget !== null) window.turnstile?.reset(turnstileWidget);
+}
+
 function setFieldError(id, message) {
   const error = document.getElementById(`${id}-error`);
   if (error) error.textContent = message;
@@ -432,7 +473,7 @@ async function loadSuggestions(query) {
     activeSuggestion = -1;
     if (!response.ok) {
       suggestions = [];
-      renderSuggestions(response.status === 429 ? 'Troppe ricerche ravvicinate: riprova tra un minuto.' : 'Ricerca non disponibile al momento. Riprova tra poco.');
+      renderSuggestions(apiProblem(response.status, 'Ricerca non disponibile al momento. Riprova tra poco.'));
       return;
     }
     suggestions = Array.isArray(body.data) ? body.data : [];
@@ -498,18 +539,26 @@ form.addEventListener('submit', async event => {
   form.dataset.sending = 'true';
   submitButton.disabled = true;
   status.textContent = 'Invio della richiesta in corso…';
-  const payload = {
-    place_id: placeIdInput.value,
-    studio: studioInput.value.trim(),
-    nome: document.getElementById('nome').value.trim(),
-    cognome: document.getElementById('cognome').value.trim(),
-    email: document.getElementById('email').value.trim(),
-    telefono: document.getElementById('telefono').value.trim(),
-    zona: area.value,
-    priorita: [...form.querySelectorAll('input[name="priorita"]:checked')].map(input => input.value),
-    nota_interna: document.getElementById('nota-interna').value,
-  };
+  let tokenSent = false;
   try {
+    const turnstileTokenValue = await turnstileReady();
+    if (turnstileSiteKey && !turnstileTokenValue) {
+      status.textContent = 'Verifica anti-spam non completata: attendi qualche secondo e riprova.';
+      return;
+    }
+    const payload = {
+      place_id: placeIdInput.value,
+      studio: studioInput.value.trim(),
+      nome: document.getElementById('nome').value.trim(),
+      cognome: document.getElementById('cognome').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      telefono: document.getElementById('telefono').value.trim(),
+      zona: area.value,
+      priorita: [...form.querySelectorAll('input[name="priorita"]:checked')].map(input => input.value),
+      nota_interna: document.getElementById('nota-interna').value,
+      turnstile_token: turnstileTokenValue,
+    };
+    tokenSent = Boolean(turnstileTokenValue);
     const response = await fetch(`${api}/richieste`, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) });
     const body = await response.json().catch(() => ({}));
     if (response.ok) {
@@ -520,6 +569,10 @@ form.addEventListener('submit', async event => {
       return;
     }
     if (response.status === 422 && body.errors) {
+      if (body.errors.turnstile_token) {
+        status.textContent = 'Verifica anti-spam non riuscita: riprova tra qualche secondo.';
+        return;
+      }
       let firstError;
       Object.entries(body.errors).forEach(([key, messages]) => {
         const id = serverFields[key.split('.')[0]];
@@ -531,10 +584,11 @@ form.addEventListener('submit', async event => {
       firstError?.focus();
       return;
     }
-    status.textContent = response.status === 429 ? 'Troppe richieste ravvicinate: riprova tra un minuto.' : 'Non siamo riusciti a inviare la richiesta. Riprova tra poco.';
+    status.textContent = apiProblem(response.status, 'Non siamo riusciti a inviare la richiesta. Riprova tra poco.');
   } catch {
     status.textContent = 'Connessione non disponibile: controlla la rete e riprova.';
   } finally {
+    if (tokenSent) resetTurnstile();
     delete form.dataset.sending;
     submitButton.disabled = false;
   }
