@@ -1,0 +1,14 @@
+Il contratto è pronto
+
+Buongiorno {{contact.first_name}},
+
+le inviamo il contratto per l’attivazione del servizio Sistema Recensioni. Può consultarlo e firmarlo direttamente online: bastano pochi minuti, non serve stamparlo né rispedirlo.
+
+Leggi e firma il contratto:
+{{document.url}}
+
+Subito dopo la firma riceverà una seconda email con il link per completare l’attivazione.
+
+--
+Per qualsiasi dubbio puoi rispondere direttamente a questa email.
+Sistema Recensioni

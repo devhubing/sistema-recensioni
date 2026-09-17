@@ -1,0 +1,21 @@
+Contratto firmato
+
+Buongiorno {{contact.first_name}},
+
+la firma del contratto di Sistema Recensioni è stata completata.
+
+Può scaricare e conservare la sua copia in PDF qui:
+{{document.url}}
+
+Per procedere con l’attivazione, può effettuare il pagamento del piano concordato:
+Piano: {{contact.piano_climbo}}
+Importo: {{contact.prezzo_piano}}
+
+Completa l’attivazione:
+{{contact.link_di_pagamento_stripe}}
+
+Dopo la conferma del pagamento, il suo account verrà creato automaticamente e riceverà le credenziali di accesso via email.
+
+--
+Per qualsiasi dubbio, può rispondere direttamente a questa email.
+Sistema Recensioni
