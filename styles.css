@@ -269,3 +269,16 @@
    fits under the navbar when a CTA scrolls to it. Stacked layouts (≤800px) keep their size. */
 @media(min-width:801px) and (max-height:770px){.contact-copy{padding:36px 44px}.contact-copy h2{margin:20px 0;font-size:clamp(34px,3.3vw,50px)}.contact-copy>p:not(.eyebrow){font-size:15px;line-height:1.7}.contact-copy .benefits{margin-top:18px;gap:12px;font-size:17px}#studio-form{padding:30px 44px}#studio-form>h3{margin-bottom:16px}#studio-form .field{margin-bottom:12px}#studio-form .field>span,#studio-form legend{margin-bottom:5px}#studio-form .field input{padding-block:9px}#studio-form fieldset{margin:0 0 16px}.choice-row label.choice-tile{flex-direction:row;gap:8px;min-height:52px;padding:10px 8px}#studio-form>.btn{min-height:50px;padding-block:12px}}
 @media(min-width:801px) and (max-height:640px){.contact-copy h2{font-size:clamp(30px,2.8vw,42px);margin:14px 0}.contact-copy>p:not(.eyebrow){font-size:14px}#studio-form>h3{font-size:19px;margin-bottom:10px}#studio-form .field{margin-bottom:8px}.choice-row label.choice-tile{min-height:44px}}
+/* Studio autosuggest (Google results from Prospect) and hidden bot trap. */
+.field>.field-label{display:block;font-size:12px;font-weight:600;margin-bottom:8px}
+.combobox{position:relative}
+.suggestions{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:6;margin:0;padding:6px;list-style:none;max-height:288px;overflow-y:auto;background:var(--surface);border:1px solid #aaa495;border-radius:var(--radius-sm);box-shadow:0 18px 36px rgb(25 25 25 / .14)}
+.suggestions[hidden]{display:none}
+.suggestions li[role=option]{display:grid;gap:1px;padding:9px 11px;border-radius:6px;font-size:13px;line-height:1.45;cursor:pointer}
+.suggestions li[role=option] strong{font-weight:600;color:var(--ink)}
+.suggestions li[role=option] span{font-size:12px;color:var(--muted)}
+.suggestions li[aria-selected=true],.suggestions li[role=option]:not(.suggestion-note):hover{background:var(--canvas)}
+.suggestions .suggestion-note{cursor:default;color:var(--muted)}
+.form-trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+#studio-form>.btn:disabled{opacity:.65;cursor:progress;transform:none}
+@media(min-width:801px) and (max-height:770px){#studio-form .field>.field-label{margin-bottom:5px}}

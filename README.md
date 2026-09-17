@@ -23,12 +23,26 @@ Apri `index.html` nel browser. La cartella è autonoma: HTML, CSS, JavaScript, f
 - Hero: titolo del test evidenziato e fascia dei loghi Google Maps, ChatGPT, Gemini e Perplexity con scorrimento automatico continuo, senza pulsanti play/pausa e senza interruzioni al passaggio del mouse o al focus. L'animazione funziona anche senza JavaScript. Con movimento ridotto attivo i quattro loghi sono disposti in una griglia statica. La stella decorativa rimane soltanto nella sezione finale.
 - Volano con sei fasi, descrizione centrale, avanzamento ogni 8,5 secondi, pausa/ripresa, selezione manuale e navigazione con frecce/Home/End. Selezionare una fase mette in pausa la riproduzione. Le descrizioni complete sono leggibili anche nell'accordion e senza JavaScript.
 - Animazioni di ingresso e indicatore di lettura. Rispetto di `prefers-reduced-motion`; il volano automatico si ferma fuori schermo e con scheda nascosta.
-- Validazione locale dei campi. Le priorità ammettono selezioni multiple; l'ambito territoriale una selezione.
+- Validazione dei campi nel browser e poi sul server. Nome e cognome sono campi separati; l'ambito territoriale ammette una selezione.
 
-## Collegamenti necessari prima della pubblicazione
+## Invio del modulo a Prospect
 
-Il PDF non include endpoint di ricezione, credenziali Google Places o documenti privacy. Il modulo non invia e non memorizza dati e dichiara l'assenza di invio dopo la validazione. Il campo studio conserva il placeholder del PDF ma è a inserimento libero: non simula risultati Google.
+Il modulo parla con le rotte pubbliche della webapp Prospect, senza token nella pagina. L'indirizzo è in `data-api` sul `<form id="studio-form">`:
 
-Per andare online occorre collegare ricezione e ricerca attività e fornire le informazioni privacy appropriate al trattamento. Le immagini estratte dal PDF possono essere sostituite con gli originali mantenendo gli stessi nomi e rapporti.
+- oggi punta a staging: `https://staging.sistemarecensioni.it/api/v1/landing/eZ3AlcoxddCWelo8pbmB`;
+- per la produzione basta sostituire il dominio con `app2.sistemarecensioni.it`, lasciando uguale la location.
+
+Come funziona:
+
+- **Nome dello studio (come appari su Google)**: dopo tre caratteri chiede i suggerimenti a `…/suggerimenti` (Google Places del sub-account). Lo studio va scelto dall'elenco, con mouse o frecce e Invio: senza una scheda scelta il modulo non parte.
+- **Invio**: `POST …/richieste` con scheda, nome, cognome, email, telefono e zona (`quartiere`, `citta`, `provincia`). In Prospect la scheda diventa un target con fonte `landing` e la persona diventa il contatto GHL, sincronizzato da Prospect via API.
+- Il campo nascosto `nota_interna` è un'esca per i bot: le persone non lo vedono.
+- Gli errori del server tornano sotto i rispettivi campi; limiti di frequenza e problemi di rete hanno un messaggio dedicato.
+
+La webapp risponde solo se la location è abilitata sul server (`PROSPECT_LANDING_LOCATIONS`). Dettagli in `Docs/15-api.md` del repository Prospect.
+
+## Prima della pubblicazione
+
+Mancano le informazioni privacy appropriate al trattamento dei dati raccolti dal modulo. Le immagini estratte dal PDF possono essere sostituite con gli originali mantenendo gli stessi nomi e rapporti.
 
 La cartella `qa/` contiene le pagine renderizzate e il testo estratto dal PDF, oltre alle verifiche della landing. Nessuna cartella preesistente è stata modificata.

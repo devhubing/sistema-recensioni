@@ -346,37 +346,202 @@ if (contactBox) {
   if (location.hash === '#richiedi') addEventListener('load', () => frameContactBox(false));
 }
 
-// Local validation only. No endpoint or Google Places credentials were supplied.
+// Lead form: Google autosuggest and submission go through the Prospect landing API, with no token in the page.
 const form = document.querySelector('#studio-form');
 const status = document.querySelector('#form-status');
-const fields = ['studio', 'nome', 'email', 'telefono'].map(id => document.getElementById(id));
+const api = form.dataset.api.replace(/\/$/, '');
+const submitButton = form.querySelector('button[type="submit"]');
+const studioInput = document.getElementById('studio');
+const placeIdInput = document.getElementById('place-id');
+const suggestionList = document.getElementById('studio-suggerimenti');
+const fields = ['studio', 'nome', 'cognome', 'email', 'telefono'].map(id => document.getElementById(id));
+const serverFields = { place_id: 'studio', studio: 'studio', nome: 'nome', cognome: 'cognome', email: 'email', telefono: 'telefono', zona: 'zona' };
+let suggestions = [];
+let activeSuggestion = -1;
+let suggestTimer;
+let suggestRequest;
+
+function setFieldError(id, message) {
+  const error = document.getElementById(`${id}-error`);
+  if (error) error.textContent = message;
+  if (id === 'zona') {
+    form.querySelectorAll('[name="zona"]').forEach(input => { input.setAttribute('aria-invalid', String(Boolean(message))); input.setAttribute('aria-describedby', 'zona-error'); });
+    return;
+  }
+  const field = document.getElementById(id);
+  if (message) field?.setAttribute('aria-invalid', 'true'); else field?.removeAttribute('aria-invalid');
+}
+
+function closeSuggestions() {
+  suggestionList.hidden = true;
+  studioInput.setAttribute('aria-expanded', 'false');
+  studioInput.removeAttribute('aria-activedescendant');
+  activeSuggestion = -1;
+}
+
+function renderSuggestions(note = '') {
+  suggestionList.replaceChildren();
+  if (note) {
+    const item = document.createElement('li');
+    item.className = 'suggestion-note';
+    item.setAttribute('role', 'option');
+    item.setAttribute('aria-disabled', 'true');
+    item.textContent = note;
+    suggestionList.append(item);
+  }
+  suggestions.forEach((suggestion, index) => {
+    const item = document.createElement('li');
+    item.id = `studio-suggerimento-${index}`;
+    item.setAttribute('role', 'option');
+    item.setAttribute('aria-selected', String(index === activeSuggestion));
+    const name = document.createElement('strong');
+    name.textContent = suggestion.nome;
+    item.append(name);
+    if (suggestion.indirizzo) {
+      const address = document.createElement('span');
+      address.textContent = suggestion.indirizzo;
+      item.append(address);
+    }
+    item.addEventListener('mousedown', event => event.preventDefault());
+    item.addEventListener('click', () => chooseSuggestion(index));
+    suggestionList.append(item);
+  });
+  const open = suggestions.length > 0 || Boolean(note);
+  suggestionList.hidden = !open;
+  studioInput.setAttribute('aria-expanded', String(open));
+  if (activeSuggestion >= 0) studioInput.setAttribute('aria-activedescendant', `studio-suggerimento-${activeSuggestion}`);
+  else studioInput.removeAttribute('aria-activedescendant');
+}
+
+function chooseSuggestion(index) {
+  const suggestion = suggestions[index];
+  if (!suggestion) return;
+  studioInput.value = suggestion.nome;
+  placeIdInput.value = suggestion.place_id;
+  setFieldError('studio', '');
+  closeSuggestions();
+}
+
+async function loadSuggestions(query) {
+  suggestRequest?.abort();
+  suggestRequest = new AbortController();
+  try {
+    const response = await fetch(`${api}/suggerimenti?q=${encodeURIComponent(query)}`, { headers: { Accept: 'application/json' }, signal: suggestRequest.signal });
+    const body = await response.json().catch(() => ({}));
+    if (studioInput.value.trim() !== query || placeIdInput.value) return;
+    activeSuggestion = -1;
+    if (!response.ok) {
+      suggestions = [];
+      renderSuggestions(response.status === 429 ? 'Troppe ricerche ravvicinate: riprova tra un minuto.' : 'Ricerca non disponibile al momento. Riprova tra poco.');
+      return;
+    }
+    suggestions = Array.isArray(body.data) ? body.data : [];
+    renderSuggestions(suggestions.length ? '' : 'Nessuno studio trovato: prova ad aggiungere la città.');
+  } catch (error) {
+    if (error.name === 'AbortError') return;
+    suggestions = [];
+    renderSuggestions('Ricerca non disponibile al momento. Riprova tra poco.');
+  }
+}
+
+studioInput.addEventListener('input', () => {
+  placeIdInput.value = '';
+  clearTimeout(suggestTimer);
+  const query = studioInput.value.trim();
+  if (query.length < 3) { suggestRequest?.abort(); suggestions = []; closeSuggestions(); return; }
+  suggestTimer = setTimeout(() => loadSuggestions(query), 300);
+});
+studioInput.addEventListener('keydown', event => {
+  if (event.key === 'Escape') { closeSuggestions(); return; }
+  if (suggestionList.hidden || !suggestions.length) return;
+  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    event.preventDefault();
+    const step = event.key === 'ArrowDown' ? 1 : -1;
+    activeSuggestion = activeSuggestion < 0 ? (step > 0 ? 0 : suggestions.length - 1) : (activeSuggestion + step + suggestions.length) % suggestions.length;
+    renderSuggestions();
+    document.getElementById(`studio-suggerimento-${activeSuggestion}`)?.scrollIntoView({ block: 'nearest' });
+  } else if (event.key === 'Enter' && activeSuggestion >= 0) {
+    event.preventDefault();
+    chooseSuggestion(activeSuggestion);
+  }
+});
+studioInput.addEventListener('blur', closeSuggestions);
+studioInput.addEventListener('focus', () => { if (!placeIdInput.value && suggestions.length) renderSuggestions(); });
+
 function fieldMessage(field) {
   const value = field.value.trim();
+  if (field.id === 'studio') {
+    if (!value) return 'Cerca il tuo studio e sceglilo dall’elenco.';
+    if (!placeIdInput.value) return 'Scegli il tuo studio dall’elenco dei risultati di Google.';
+    return '';
+  }
   if (!value) return 'Compila questo campo.';
-  if ((field.id === 'studio' || field.id === 'nome') && value.length < 2) return 'Inserisci almeno 2 caratteri.';
   if (field.id === 'email' && !field.validity.valid) return 'Inserisci un indirizzo email valido.';
   if (field.id === 'telefono' && (!/^[+\d\s().-]+$/.test(value) || value.replace(/\D/g, '').length < 7 || value.replace(/\D/g, '').length > 15)) return 'Inserisci un numero di telefono valido.';
   return '';
 }
-form.addEventListener('submit', event => {
+
+form.addEventListener('submit', async event => {
   event.preventDefault();
+  if (form.dataset.sending) return;
   let firstInvalid;
   fields.forEach(field => {
     const message = fieldMessage(field);
-    document.getElementById(`${field.id}-error`).textContent = message;
-    field.setAttribute('aria-invalid', String(Boolean(message)));
+    setFieldError(field.id, message);
     if (message && !firstInvalid) firstInvalid = field;
   });
-  const hasArea = Boolean(form.querySelector('input[name="zona"]:checked'));
-  document.querySelector('#zona-error').textContent = hasArea ? '' : 'Scegli quartiere, città o provincia.';
-  form.querySelectorAll('[name="zona"]').forEach(input => { input.setAttribute('aria-invalid', String(!hasArea)); input.setAttribute('aria-describedby', 'zona-error'); });
-  if (!hasArea && !firstInvalid) firstInvalid = form.querySelector('[name="zona"]');
+  const area = form.querySelector('input[name="zona"]:checked');
+  setFieldError('zona', area ? '' : 'Scegli quartiere, città o provincia.');
+  if (!area && !firstInvalid) firstInvalid = form.querySelector('[name="zona"]');
   if (firstInvalid) { status.textContent = ''; firstInvalid.focus(); return; }
-  status.textContent = 'I campi sono compilati correttamente. Questa anteprima non invia richieste: il modulo deve essere collegato al servizio di ricezione prima della pubblicazione.';
+
+  form.dataset.sending = 'true';
+  submitButton.disabled = true;
+  status.textContent = 'Invio della richiesta in corso…';
+  const payload = {
+    place_id: placeIdInput.value,
+    studio: studioInput.value.trim(),
+    nome: document.getElementById('nome').value.trim(),
+    cognome: document.getElementById('cognome').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    telefono: document.getElementById('telefono').value.trim(),
+    zona: area.value,
+    priorita: [...form.querySelectorAll('input[name="priorita"]:checked')].map(input => input.value),
+    nota_interna: document.getElementById('nota-interna').value,
+  };
+  try {
+    const response = await fetch(`${api}/richieste`, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) });
+    const body = await response.json().catch(() => ({}));
+    if (response.ok) {
+      form.reset();
+      placeIdInput.value = '';
+      suggestions = [];
+      status.textContent = 'Richiesta ricevuta. Analizziamo il tuo studio e ti inviamo le due analisi all’email indicata.';
+      return;
+    }
+    if (response.status === 422 && body.errors) {
+      let firstError;
+      Object.entries(body.errors).forEach(([key, messages]) => {
+        const id = serverFields[key.split('.')[0]];
+        if (!id) return;
+        setFieldError(id, messages[0]);
+        firstError ??= id === 'zona' ? form.querySelector('[name="zona"]') : document.getElementById(id);
+      });
+      status.textContent = 'Controlla i campi evidenziati.';
+      firstError?.focus();
+      return;
+    }
+    status.textContent = response.status === 429 ? 'Troppe richieste ravvicinate: riprova tra un minuto.' : 'Non siamo riusciti a inviare la richiesta. Riprova tra poco.';
+  } catch {
+    status.textContent = 'Connessione non disponibile: controlla la rete e riprova.';
+  } finally {
+    delete form.dataset.sending;
+    submitButton.disabled = false;
+  }
 });
 form.addEventListener('input', event => {
-  status.textContent = '';
+  if (!form.dataset.sending) status.textContent = '';
   const field = event.target;
-  if (fields.includes(field)) { field.removeAttribute('aria-invalid'); document.getElementById(`${field.id}-error`).textContent = ''; }
-  if (field.name === 'zona') { document.querySelector('#zona-error').textContent = ''; form.querySelectorAll('[name="zona"]').forEach(input => input.removeAttribute('aria-invalid')); }
+  if (fields.includes(field)) setFieldError(field.id, '');
+  if (field.name === 'zona') setFieldError('zona', '');
 });
